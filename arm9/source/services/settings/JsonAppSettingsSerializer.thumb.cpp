@@ -16,6 +16,8 @@
 #define KEY_LAST_USED_FILE_PATH      "lastUsedFilePath"
 #define KEY_FILE_ASSOCIATIONS        "fileAssociations"
 #define KEY_FILE_ASSOCIATIONS_APPLICATION_PATH  "appPath"
+#define KEY_FILE_ASSOCIATIONS_METHOD  "method"
+#define KEY_FILE_ASSOCIATIONS_PATHFILE  "pathFile"
 
 static const char* serializeRomBrowserLayout(RomBrowserLayout romBrowserLayout)
 {
@@ -104,7 +106,17 @@ static bool tryParseFileAssociations(const JsonObjectConst& json, AppSettings* a
     {
         auto extension = item.key().c_str();
         auto appPath = item.value()[KEY_FILE_ASSOCIATIONS_APPLICATION_PATH].as<const char*>();
-        appSettings->fileAssociations[i++] = FileAssociation(extension, appPath);
+        // Optional extended fields (backwards compatible):
+        // - method: "argv" (default) or "pathfile"
+        // - pathFile: absolute path to the handoff text file (used when method==pathfile)
+        const char* methodStr = item.value()[KEY_FILE_ASSOCIATIONS_METHOD].as<const char*>();
+        const char* pathFile = item.value()[KEY_FILE_ASSOCIATIONS_PATHFILE].as<const char*>();
+
+        FileAssociationMethod method = FILE_ASSOC_METHOD_ARGV;
+        if (methodStr && !strcasecmp(methodStr, "pathfile"))
+            method = FILE_ASSOC_METHOD_PATHFILE;
+
+        appSettings->fileAssociations[i++] = FileAssociation(extension, appPath, method, pathFile ? pathFile : "");
     }
     appSettings->numberOfFileAssociations = i;
     return true;
@@ -118,6 +130,13 @@ static void serializeFileAssociations(DynamicJsonDocument& json, const AppSettin
         const auto& fileAssociation = appSettings->fileAssociations[i];
         auto jsonAssociation = jsonObject[fileAssociation.extension.GetString()].to<JsonObject>();
         jsonAssociation[KEY_FILE_ASSOCIATIONS_APPLICATION_PATH] = fileAssociation.applicationPath.GetString();
+
+        // Only serialize extended keys when needed to keep settings.json clean.
+        if (fileAssociation.method == FILE_ASSOC_METHOD_PATHFILE)
+        {
+            jsonAssociation[KEY_FILE_ASSOCIATIONS_METHOD] = "pathfile";
+            jsonAssociation[KEY_FILE_ASSOCIATIONS_PATHFILE] = fileAssociation.pathFile.GetString();
+        }
     }
 }
 

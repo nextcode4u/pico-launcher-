@@ -1,0 +1,27 @@
+{
+  "language": "english",
+  "romBrowserLayout": "Grid",
+  "romBrowserSortMode": "NameAscending",
+  "theme": "material",
+  "lastUsedFilePath": "/roms",
+  "fileAssociations": {
+    "sfc": {
+      "appPath": "sd:/_nds/TWiLightMenu/emulators/SNEmulDS-legacy-twlm-path.nds",
+      "method": "pathfile",
+      "pathFile": "sd:/_nds/pico-launcher/handoff/lastrom_snes.txt"
+    },
+    "smc": {
+      "appPath": "sd:/_nds/TWiLightMenu/emulators/SNEmulDS-legacy-twlm-path.nds",
+      "method": "pathfile",
+      "pathFile": "sd:/_nds/pico-launcher/handoff/lastrom_snes.txt"
+    },
+    "gb": {
+      "appPath": "sd:/_nds/TWiLightMenu/emulators/gameyob.nds",
+      "method": "argv"
+    },
+    "gbc": {
+      "appPath": "sd:/_nds/TWiLightMenu/emulators/gameyob.nds",
+      "method": "argv"
+    }
+  }
+}
