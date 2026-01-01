@@ -47,3 +47,7 @@ Thumbs.db
 *.elf
 *.a
 .vscode/
+
+/build
+*.elf
+*.nds

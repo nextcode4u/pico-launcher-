@@ -8,7 +8,7 @@
 static tlsf_t sHeap;
 static rtos_mutex_t sHeapMutex;
 
-static void* pico_malloc(size_t size)
+extern "C" void* malloc(size_t size)
 {
     void* result;
     rtos_lockMutex(&sHeapMutex);
@@ -24,7 +24,7 @@ extern "C" void* _malloc_r(struct _reent *, size_t size)
     return malloc(size);
 }
 
-static void pico_free(void* ptr)
+extern "C" void free(void* ptr)
 {
     rtos_lockMutex(&sHeapMutex);
     {
@@ -38,7 +38,7 @@ extern "C" void _free_r(struct _reent *, void* ptr)
     free(ptr);
 }
 
-static void* pico_realloc(void* ptr, size_t size)
+extern "C" void* realloc(void* ptr, size_t size)
 {
     void* result;
     rtos_lockMutex(&sHeapMutex);
@@ -141,37 +141,3 @@ void heap_dump()
     LOG_DEBUG("addr - size\n");
     tlsf_walk_pool(tlsf_get_pool(sHeap), dumpWalker, (void*)false);
 }
-
-extern "C" void* __wrap_malloc(size_t size) {
-    return pico_malloc(size);
-}
-extern "C" void __wrap_free(void* ptr) {
-    pico_free(ptr);
-}
-
-extern "C" void* __wrap_calloc(size_t n, size_t size) {
-    // If pico_calloc exists, use it; otherwise emulate using malloc+memset.
-    #if defined(__GNUC__)
-    extern void* pico_calloc(size_t, size_t) __attribute__((weak));
-    #endif
-    if (pico_calloc) return pico_calloc(n, size);
-    size_t total = n * size;
-    void* p = pico_malloc(total);
-    if (p) __builtin_memset(p, 0, total);
-    return p;
-}
-
-extern "C" void* __wrap_realloc(void* ptr, size_t size) {
-    // If pico_realloc exists, use it; otherwise emulate naive realloc.
-    #if defined(__GNUC__)
-    extern void* pico_realloc(void*, size_t) __attribute__((weak));
-    #endif
-    if (pico_realloc) return pico_realloc(ptr, size);
-    if (!ptr) return pico_malloc(size);
-    if (size == 0) { pico_free(ptr); return nullptr; }
-    // Fallback: allocate new, copy unknown old size (can't), so return new and leak old.
-    // Better to implement pico_realloc in the heap code if needed.
-    void* n = pico_malloc(size);
-    return n;
-}
-
