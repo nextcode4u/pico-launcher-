@@ -9,7 +9,8 @@
 #include "sortNameAscendingIcon.h"
 #include "sortNameDescendingIcon.h"
 #include "iconButtonSelector.h"
-#include "largeFolderIcon.h"
+#include "smallFolderIcon.h"
+#include "smallHomeIcon.h"
 #include "coverflowIcon.h"
 #include "../IRomBrowserController.h"
 #include "gui/input/InputProvider.h"
@@ -187,10 +188,10 @@ void DisplaySettingsBottomSheetView::InitVram(const VramContext& vramContext)
         // _sortOptions[2].SetIconVramOffset(LoadIcon(objVramManager, recentIconTiles, recentIconTilesLen));
 
         // appearance options
-        _appearanceOptions[0].SetIconVramOffset(LoadIcon(*objVramManager, iconButtonSelectorTiles, iconButtonSelectorTilesLen));
+        _appearanceOptions[0].SetIconVramOffset(LoadIcon(*objVramManager, smallHomeIconTiles, smallHomeIconTilesLen));
 
         // filter options
-        _filterOptions[0].SetIconVramOffset(LoadIcon(*objVramManager, largeFolderIconTiles, largeFolderIconTilesLen));
+        _filterOptions[0].SetIconVramOffset(LoadIcon(*objVramManager, smallFolderIconTiles, smallFolderIconTilesLen));
     }
 }
 
