@@ -98,6 +98,7 @@ private:
     VramState _vramStateBeforeMakeBottomScreenView;
     VramState _vramStateAfterMakeBottomScreenView;
     bool _changeDisplayMode = false;
+    bool _isDarkTheme = false;
 
     ChipView::VramToken _chipViewVram;
     IconButton2DView::VramToken _iconButtonViewVram;

@@ -3,7 +3,7 @@
 #include "custom/CustomTheme.h"
 #include "ThemeFactory.h"
 
-std::unique_ptr<ITheme> ThemeFactory::CreateFromThemeInfo(const ThemeInfo* themeInfo) const
+std::unique_ptr<ITheme> ThemeFactory::CreateFromThemeInfo(const ThemeInfo* themeInfo, bool darkTheme) const
 {
     switch (themeInfo->GetType())
     {
@@ -12,14 +12,14 @@ std::unique_ptr<ITheme> ThemeFactory::CreateFromThemeInfo(const ThemeInfo* theme
             return std::make_unique<MaterialTheme>(
                 themeInfo->GetFolderName(),
                 themeInfo->GetPrimaryColor(),
-                themeInfo->GetIsDarkTheme());
+                darkTheme);
         }
         case ThemeType::Custom:
         {
             return std::make_unique<CustomTheme>(
                 themeInfo->GetFolderName(),
                 themeInfo->GetPrimaryColor(),
-                themeInfo->GetIsDarkTheme());
+                darkTheme);
         }
         default:
         {

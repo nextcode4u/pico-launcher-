@@ -94,7 +94,9 @@ void App::LoadTheme()
         LOG_DEBUG("Failed to load theme '%s'. Using fallback theme.\n", _appSettingsService.GetAppSettings().theme.GetString());
         themeInfo = themeInfoFactory.CreateFallbackTheme();
     }
-    _theme = ThemeFactory().CreateFromThemeInfo(themeInfo.get());
+    bool useDarkTheme = _appSettingsService.GetAppSettings().romBrowserDisplaySettings.darkTheme;
+    _theme = ThemeFactory().CreateFromThemeInfo(themeInfo.get(), useDarkTheme);
+    _isDarkTheme = useDarkTheme;
     themeInfo.reset();
     _theme->LoadRomBrowserResources(_mainVramContext, _subVramContext);
     _topBackground = _theme->CreateRomBrowserTopBackground();
@@ -287,7 +289,7 @@ void App::HandleTrigger(RomBrowserStateTrigger trigger, RomBrowserState newState
         }
         case RomBrowserStateTrigger::ChangeDisplayMode:
         {
-            _changeDisplayMode = true;
+            HandleChangeDisplayModeTrigger(newState);
             break;
         }
     }
@@ -348,6 +350,26 @@ void App::HandleFolderLoadDoneTrigger()
 
 void App::HandleChangeDisplayModeTrigger(RomBrowserState newState)
 {
+    _changeDisplayMode = true;
+
+    bool desiredDarkTheme = _appSettingsService.GetAppSettings().romBrowserDisplaySettings.darkTheme;
+    if (desiredDarkTheme != _isDarkTheme)
+    {
+        _dialogPresenter.CloseDialog();
+        _dialogPresenter.ClearOldFocus();
+        LoadTheme();
+        _iconButtonViewVram = IconButton2DView::UploadGraphics(_mainObjVram);
+
+        const auto& materialColorScheme = _theme->GetMaterialColorScheme();
+        auto scrimBlendColor = Rgb<8, 8, 8>(
+            materialColorScheme.inverseOnSurface.r + (materialColorScheme.scrim.r - materialColorScheme.inverseOnSurface.r) * 5 / 16,
+            materialColorScheme.inverseOnSurface.g + (materialColorScheme.scrim.g - materialColorScheme.inverseOnSurface.g) * 5 / 16,
+            materialColorScheme.inverseOnSurface.b + (materialColorScheme.scrim.b - materialColorScheme.inverseOnSurface.b) * 5 / 16);
+        RgbMixer::MakeGradientPalette((u16*)GFX_PLTT_BG_MAIN, scrimBlendColor, materialColorScheme.GetColor(md::sys::color::surfaceContainerLow));
+        GFX_PLTT_BG_MAIN[0] = ColorConverter::ToGBGR565(materialColorScheme.inverseOnSurface);
+        GFX_PLTT_BG_MAIN[31] = ColorConverter::ToGBGR565(materialColorScheme.scrim);
+    }
+
     _dialogPresenter.ClearOldFocus();
     RestoreVramState(_vramStateBeforeMakeBottomScreenView);
     auto displayMode = RomBrowserDisplayModeFactory().GetRomBrowserDisplayMode(
@@ -369,6 +391,8 @@ void App::HandleChangeDisplayModeTrigger(RomBrowserState newState)
     _romBrowserBottomScreenView->RomBrowserViewModelInvalidated(_mainVramContext);
     if (newState == RomBrowserState::Browser)
         _romBrowserBottomScreenView->Focus(_focusManager);
+
+    _changeDisplayMode = false;
 }
 
 bool App::IsRomBrowserVisible() const
@@ -386,11 +410,7 @@ void App::Update()
     const auto& stateMachine = _romBrowserController.GetStateMachine();
     _romBrowserController.Update();
     auto curState = stateMachine.GetCurrentState();
-    if (_changeDisplayMode)
-    {
-        HandleChangeDisplayModeTrigger(curState);
-        _changeDisplayMode = false;
-    }
+
     if (stateMachine.HasStateChanged())
     {
         HandleTrigger(stateMachine.GetLastTrigger(), curState);

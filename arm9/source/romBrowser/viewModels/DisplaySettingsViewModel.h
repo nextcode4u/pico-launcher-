@@ -38,6 +38,20 @@ public:
         }
     }
 
+    constexpr bool GetDarkTheme() const
+    {
+        return _romBrowserDisplaySettings.darkTheme;
+    }
+
+    void SetDarkTheme(bool darkTheme)
+    {
+        if (_romBrowserDisplaySettings.darkTheme != darkTheme)
+        {
+            _romBrowserDisplaySettings.darkTheme = darkTheme;
+            _romBrowserController->SetRomBrowserDisplaySettings(_romBrowserDisplaySettings);
+        }
+    }
+
     constexpr bool GetHideFolders() const
     {
         return _romBrowserDisplaySettings.hideFolders;

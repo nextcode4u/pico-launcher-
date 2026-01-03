@@ -7,5 +7,5 @@
 class ThemeFactory
 {
 public:
-    std::unique_ptr<ITheme> CreateFromThemeInfo(const ThemeInfo* themeInfo) const;
+    std::unique_ptr<ITheme> CreateFromThemeInfo(const ThemeInfo* themeInfo, bool darkThemeOverride) const;
 };

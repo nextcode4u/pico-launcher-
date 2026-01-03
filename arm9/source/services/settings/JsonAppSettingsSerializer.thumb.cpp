@@ -13,6 +13,7 @@
 #define KEY_ROM_BROWSER_LAYOUT       "romBrowserLayout"
 #define KEY_ROM_BROWSER_SORT_MODE    "romBrowserSortMode"
 #define KEY_ROM_BROWSER_HIDE_FOLDERS "romBrowserHideFolders"
+#define KEY_ROM_BROWSER_DARK_THEME   "romBrowserDarkTheme"
 #define KEY_THEME                    "theme"
 #define KEY_LAST_USED_FILE_PATH      "lastUsedFilePath"
 #define KEY_FILE_ASSOCIATIONS        "fileAssociations"
@@ -148,6 +149,7 @@ static std::unique_ptr<u8[]> writeJson(const AppSettings* appSettings, u32& leng
     json[KEY_ROM_BROWSER_LAYOUT] = serializeRomBrowserLayout(appSettings->romBrowserDisplaySettings.layout);
     json[KEY_ROM_BROWSER_SORT_MODE] = serializeRomBrowserSortMode(appSettings->romBrowserDisplaySettings.sortMode);
     json[KEY_ROM_BROWSER_HIDE_FOLDERS] = appSettings->romBrowserDisplaySettings.hideFolders;
+    json[KEY_ROM_BROWSER_DARK_THEME] = appSettings->romBrowserDisplaySettings.darkTheme;
     json[KEY_THEME] = appSettings->theme.GetString();
     json[KEY_LAST_USED_FILE_PATH] = appSettings->lastUsedFilePath.GetString();
     serializeFileAssociations(json, appSettings);
@@ -201,6 +203,8 @@ static void readJson(AppSettings* appSettings, const JsonDocument& json)
     {
         appSettings->romBrowserDisplaySettings.sortMode = romBrowserSortMode;
     }
+    appSettings->romBrowserDisplaySettings.darkTheme = json[KEY_ROM_BROWSER_DARK_THEME]
+        | appSettings->romBrowserDisplaySettings.darkTheme;
     appSettings->romBrowserDisplaySettings.hideFolders = json[KEY_ROM_BROWSER_HIDE_FOLDERS]
         | appSettings->romBrowserDisplaySettings.hideFolders;
 
