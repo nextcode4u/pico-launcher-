@@ -11,6 +11,7 @@ public:
     String<char, 64> theme = "material";
     String<char, 256> lastUsedFilePath = "";
     RomBrowserDisplaySettings romBrowserDisplaySettings;
+    bool showHiddenItemsToggle = false;
 
     std::unique_ptr<FileAssociation[]> fileAssociations;
     u32 numberOfFileAssociations = 0;

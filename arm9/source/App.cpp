@@ -312,8 +312,10 @@ void App::HandleHideGameInfoTrigger()
 
 void App::HandleShowDisplaySettingsTrigger()
 {
+    bool showHiddenItemsToggle = _appSettingsService.GetAppSettings().showHiddenItemsToggle;
     auto displaySettingsDialog = std::make_unique<DisplaySettingsBottomSheetView>(
-        &_displaySettingsBottomSheetViewModel, &_theme->GetMaterialColorScheme(), _theme->GetFontRepository());
+        &_displaySettingsBottomSheetViewModel, &_theme->GetMaterialColorScheme(), _theme->GetFontRepository(),
+        showHiddenItemsToggle);
     displaySettingsDialog->SetGraphics(_iconButtonViewVram);
     _dialogPresenter.ShowDialog(std::move(displaySettingsDialog));
 }

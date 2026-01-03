@@ -5,7 +5,7 @@
 class RomBrowserDisplaySettings
 {
 public:
-    bool hideFolders = false;
+    bool hideFolders = true;
     bool darkTheme = false;
     RomBrowserLayout layout = RomBrowserLayout::HorizontalIconGrid;
     RomBrowserSortMode sortMode = RomBrowserSortMode::NameAscending;
