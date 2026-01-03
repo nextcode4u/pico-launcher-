@@ -70,10 +70,10 @@ clean:
 	$(V)$(RM) $(ROM) build $(SDIMAGE)
 
 arm9: checklibtwl
-	$(V)+$(MAKE) -f Makefile.arm9 --no-print-directory
+	+$(MAKE) -f Makefile.arm9 --no-print-directory
 
 arm7: checklibtwl
-	$(V)+$(MAKE) -f Makefile.arm7 --no-print-directory
+	+$(MAKE) -f Makefile.arm7 --no-print-directory
 
 checklibtwl:
 	$(MAKE) -C $(LIBTWL)
