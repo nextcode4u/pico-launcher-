@@ -35,17 +35,17 @@ private:
     Label2DView _titleLabel;
     Label2DView _layoutLabel;
     Label2DView _sortingLabel;
-    // LabelView _filtersLabel;
+    Label2DView _filtersLabel;
 
     std::array<IconButton2DView, 4> _layoutOptions;
     std::array<IconButton2DView, /*3*/2> _sortOptions;
-    // std::array<IconButton2DView, 5> _filterOptions;
+    std::array<IconButton2DView, 1> _filterOptions;
 
     const MaterialColorScheme* _materialColorScheme;
 
     IconButton2DView CreateLayoutOptionIconButton();
     IconButton2DView CreateSortOptionIconButton();
-    // IconButton2DView CreateFilterOptionIconButton();
+    IconButton2DView CreateFilterOptionIconButton();
 
     void UpdateLabels();
 

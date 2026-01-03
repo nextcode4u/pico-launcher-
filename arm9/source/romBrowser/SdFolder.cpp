@@ -22,6 +22,12 @@ std::unique_ptr<const FileInfo*[]> SdFolder::FilterAndSort(
     {
         const FileInfo* file = _files[i];
         auto classification = file->GetFileType()->GetClassification();
+        if (filterSortParams.hideFolders)
+        {
+            const auto* fileName = file->GetFileName();
+            if (file->IsHidden() || fileName[0] == '.' || fileName[0] == '_')
+                continue;
+        }
         if (classification != FileTypeClassification::Unknown)
         {
             sortedFilteredFiles[filteredCount++] = file;

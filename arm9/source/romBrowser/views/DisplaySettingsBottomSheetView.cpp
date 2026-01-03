@@ -9,11 +9,7 @@
 #include "sortNameAscendingIcon.h"
 #include "sortNameDescendingIcon.h"
 #include "recentIcon.h"
-#include "gamesIcon.h"
-#include "picturesIcon.h"
-#include "musicIcon.h"
-#include "moviesIcon.h"
-#include "unknownIcon.h"
+#include "largeFolderIcon.h"
 #include "coverflowIcon.h"
 #include "../IRomBrowserController.h"
 #include "gui/input/InputProvider.h"
@@ -55,8 +51,8 @@ DisplaySettingsBottomSheetView::DisplaySettingsBottomSheetView(
     , _titleLabel(128, 16, 25, fontRepository->GetFont(FontType::Medium11))
     , _layoutLabel(64, 16, 25, fontRepository->GetFont(FontType::Regular10))
     , _sortingLabel(64, 16, 25, fontRepository->GetFont(FontType::Regular10))
+    , _filtersLabel(64, 16, 25, fontRepository->GetFont(FontType::Regular10))
     , _materialColorScheme(materialColorScheme)
-    // , _filtersLabel(64, 16, 25, fontRepository->GetFont(FontType::Regular10))
 {
     _titleLabel.SetText(u"Display Settings");
     AddChildTail(&_titleLabel);
@@ -64,8 +60,8 @@ DisplaySettingsBottomSheetView::DisplaySettingsBottomSheetView(
     AddChildTail(&_layoutLabel);
     _sortingLabel.SetText(u"Sorting");
     AddChildTail(&_sortingLabel);
-    // _filtersLabel.SetText(u"Filters");
-    // AddChildTail(&_filtersLabel);
+    _filtersLabel.SetText(u"Hidden Items");
+    AddChildTail(&_filtersLabel);
 
     for (auto& layoutOption : _layoutOptions)
     {
@@ -79,13 +75,11 @@ DisplaySettingsBottomSheetView::DisplaySettingsBottomSheetView(
         AddChildTail(&sortOption);
     }
 
-    // for (auto& filterOption : _filterOptions)
-    // {
-    //     filterOption = CreateFilterOptionIconButton();
-    //     AddChildTail(&filterOption);
-    // }
-
-    // _filterOptions[0].SetState(IconButtonView::State::ToggleSelected);
+    for (auto& filterOption : _filterOptions)
+    {
+        filterOption = CreateFilterOptionIconButton();
+        AddChildTail(&filterOption);
+    }
 }
 
 IconButton2DView DisplaySettingsBottomSheetView::CreateLayoutOptionIconButton()
@@ -124,17 +118,22 @@ IconButton2DView DisplaySettingsBottomSheetView::CreateSortOptionIconButton()
     return sortOption;
 }
 
-// IconButtonView DisplaySettingsBottomSheetView::CreateFilterOptionIconButton()
-// {
-//     IconButtonView filterOption
-//     {
-//         IconButtonView::Type::Tonal,
-//         IconButtonView::State::ToggleUnselected,
-//         md::sys::color::surfaceContainerLow,
-//         _materialColorScheme
-//     };
-//     return filterOption;
-// }
+IconButton2DView DisplaySettingsBottomSheetView::CreateFilterOptionIconButton()
+{
+    IconButton2DView filterOption
+    {
+        IconButtonView::Type::Tonal,
+        IconButtonView::State::ToggleUnselected,
+        md::sys::color::surfaceContainerLow,
+        _materialColorScheme
+    };
+    filterOption.SetAction([] (IconButtonView* sender, void* arg)
+    {
+        auto self = reinterpret_cast<DisplaySettingsBottomSheetView*>(arg);
+        self->_viewModel->SetHideFolders(!self->_viewModel->GetHideFolders());
+    }, this);
+    return filterOption;
+}
 
 void DisplaySettingsBottomSheetView::InitVram(const VramContext& vramContext)
 {
@@ -155,11 +154,7 @@ void DisplaySettingsBottomSheetView::InitVram(const VramContext& vramContext)
         // _sortOptions[2].SetIconVramOffset(LoadIcon(objVramManager, recentIconTiles, recentIconTilesLen));
 
         // filter options
-        // _filterOptions[0].SetIconVramOffset(LoadIcon(objVramManager, gamesIconTiles, gamesIconTilesLen));
-        // _filterOptions[1].SetIconVramOffset(LoadIcon(objVramManager, picturesIconTiles, picturesIconTilesLen));
-        // _filterOptions[2].SetIconVramOffset(LoadIcon(objVramManager, musicIconTiles, musicIconTilesLen));
-        // _filterOptions[3].SetIconVramOffset(LoadIcon(objVramManager, moviesIconTiles, moviesIconTilesLen));
-        // _filterOptions[4].SetIconVramOffset(LoadIcon(objVramManager, unknownIconTiles, unknownIconTilesLen));
+        _filterOptions[0].SetIconVramOffset(LoadIcon(*objVramManager, largeFolderIconTiles, largeFolderIconTilesLen));
     }
 }
 
@@ -168,7 +163,7 @@ void DisplaySettingsBottomSheetView::UpdateLabels()
     _titleLabel.SetPosition(TITLE_LABEL_X, _position.y + TITLE_LABEL_Y);
     _layoutLabel.SetPosition(LAYOUT_LABEL_X, _position.y + LAYOUT_LABEL_Y);
     _sortingLabel.SetPosition(SORTING_LABEL_X, _position.y + SORTING_LABEL_Y);
-    // _filtersLabel.SetPosition(FILTERS_LABEL_X, _position.y + FILTERS_LABEL_Y);
+    _filtersLabel.SetPosition(FILTERS_LABEL_X, _position.y + FILTERS_LABEL_Y);
 }
 
 void DisplaySettingsBottomSheetView::Update()
@@ -199,12 +194,16 @@ void DisplaySettingsBottomSheetView::Update()
         x += 32;
         idx++;
     }
-    // x = 70;
-    // for (auto& filterOption : _filterOptions)
-    // {
-    //     filterOption.SetPosition(x, _position.y + 102);
-    //     x += 32;
-    // }
+    x = 70;
+    auto hideFoldersEnabled = _viewModel->GetHideFolders();
+    for (auto& filterOption : _filterOptions)
+    {
+        filterOption.SetPosition(x, _position.y + 102);
+        filterOption.SetState(hideFoldersEnabled
+            ? IconButtonView::State::ToggleSelected
+            : IconButtonView::State::ToggleUnselected);
+        x += 32;
+    }
 }
 
 void DisplaySettingsBottomSheetView::Draw(GraphicsContext& graphicsContext)
@@ -218,8 +217,8 @@ void DisplaySettingsBottomSheetView::Draw(GraphicsContext& graphicsContext)
         _layoutLabel.SetForegroundColor(_materialColorScheme->onSurfaceVariant);
         _sortingLabel.SetBackgroundColor(_materialColorScheme->GetColor(md::sys::color::surfaceContainerLow));
         _sortingLabel.SetForegroundColor(_materialColorScheme->onSurfaceVariant);
-        // _filtersLabel.SetBackgroundColor(_materialColorScheme->GetColor(md::sys::color::surfaceContainerLow));
-        // _filtersLabel.SetForegroundColor(_materialColorScheme->onSurfaceVariant);
+        _filtersLabel.SetBackgroundColor(_materialColorScheme->GetColor(md::sys::color::surfaceContainerLow));
+        _filtersLabel.SetForegroundColor(_materialColorScheme->onSurfaceVariant);
         BottomSheetView::Draw(graphicsContext);
     }
     graphicsContext.SetPriority(oldPrio);
@@ -289,53 +288,53 @@ View* DisplaySettingsBottomSheetView::MoveFocus(View* currentFocus,
                     idx = 0;
                 return &_sortOptions[idx];
             }
-            else //if (direction == FocusMoveDirection::Up)
+            else if (direction == FocusMoveDirection::Up)
             {
                 if (idx >= (int)_layoutOptions.size())
                     idx = _layoutOptions.size() - 1;
                 return &_layoutOptions[idx];
             }
-            // else //if (direction == FocusMoveDirection::Down)
-            // {
-            //     if (idx >= (int)_filterOptions.size())
-            //         idx = _filterOptions.size() - 1;
-            //     return &_filterOptions[idx];
-            // }
+            else if (direction == FocusMoveDirection::Down)
+            {
+                if (idx >= (int)_filterOptions.size())
+                    idx = _filterOptions.size() - 1;
+                return &_filterOptions[idx];
+            }
         }
         idx++;
     }
-    // idx = 0;
-    // for (auto& filterOption : _filterOptions)
-    // {
-    //     if (currentFocus == &filterOption)
-    //     {
-    //         if (direction == FocusMoveDirection::Left)
-    //         {
-    //             if (--idx < 0)
-    //                 idx += _filterOptions.size();
-    //             return &_filterOptions[idx];
-    //         }
-    //         else if (direction == FocusMoveDirection::Right)
-    //         {
-    //             if (++idx >= (int)_filterOptions.size())
-    //                 idx = 0;
-    //             return &_filterOptions[idx];
-    //         }
-    //         else if (direction == FocusMoveDirection::Up)
-    //         {
-    //             if (idx >= (int)_sortOptions.size())
-    //                 idx = _sortOptions.size() - 1;
-    //             return &_sortOptions[idx];
-    //         }
-    //         else //if (direction == FocusMoveDirection::Down)
-    //         {
-    //             if (idx >= (int)_layoutOptions.size())
-    //                 idx = _layoutOptions.size() - 1;
-    //             return &_layoutOptions[idx];
-    //         }
-    //     }
-    //     idx++;
-    // }
+    idx = 0;
+    for (auto& filterOption : _filterOptions)
+    {
+        if (currentFocus == &filterOption)
+        {
+            if (direction == FocusMoveDirection::Left)
+            {
+                if (--idx < 0)
+                    idx += _filterOptions.size();
+                return &_filterOptions[idx];
+            }
+            else if (direction == FocusMoveDirection::Right)
+            {
+                if (++idx >= (int)_filterOptions.size())
+                    idx = 0;
+                return &_filterOptions[idx];
+            }
+            else if (direction == FocusMoveDirection::Up)
+            {
+                if (idx >= (int)_sortOptions.size())
+                    idx = _sortOptions.size() - 1;
+                return &_sortOptions[idx];
+            }
+            else if (direction == FocusMoveDirection::Down)
+            {
+                if (idx >= (int)_layoutOptions.size())
+                    idx = _layoutOptions.size() - 1;
+                return &_layoutOptions[idx];
+            }
+        }
+        idx++;
+    }
     return nullptr;
 }
 
@@ -346,8 +345,8 @@ void DisplaySettingsBottomSheetView::SetGraphics(
         layoutOption.SetGraphics(iconButtonVramToken);
     for (auto& sortOption : _sortOptions)
         sortOption.SetGraphics(iconButtonVramToken);
-    // for (auto& filterOption : _filterOptions)
-    //     filterOption.SetGraphics(iconButtonVramToken);
+    for (auto& filterOption : _filterOptions)
+        filterOption.SetGraphics(iconButtonVramToken);
 }
 
 u32 DisplaySettingsBottomSheetView::LoadIcon(IVramManager& vramManager,

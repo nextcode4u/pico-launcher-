@@ -32,7 +32,8 @@ std::unique_ptr<SdFolder> SdFolderFactory::CreateFromPath(const char* path) cons
             ? &FolderFileType::sInstance
             : _fileTypeProvider->GetFileType(sdFileInfo->fname);
         fileInfos[count++] = new FileInfo(sdFileInfo->fname, fileType,
-            FastFileRef(directory.GetFatFsDirectory(), sdFileInfo.get()));
+            FastFileRef(directory.GetFatFsDirectory(), sdFileInfo.get()),
+            (sdFileInfo->fattrib & AM_HID) != 0);
     }
 
     return std::make_unique<SdFolder>(fileInfos, count);

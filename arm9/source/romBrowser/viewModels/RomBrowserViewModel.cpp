@@ -6,7 +6,8 @@ RomBrowserViewModel::RomBrowserViewModel(IRomBrowserController* romBrowserContro
     : _romBrowserController(romBrowserController)
 {
     SdFolderFilterSortParams filterSortParams;
-    switch (romBrowserController->GetRomBrowserDisplaySettings().sortMode)
+    const auto& displaySettings = romBrowserController->GetRomBrowserDisplaySettings();
+    switch (displaySettings.sortMode)
     {
         case RomBrowserSortMode::NameAscending:
         default:
@@ -28,6 +29,7 @@ RomBrowserViewModel::RomBrowserViewModel(IRomBrowserController* romBrowserContro
             break;
         }
     }
+    filterSortParams.hideFolders = displaySettings.hideFolders;
     u64 startTick = gTickCounter.GetValue();
     const auto& sdFolder = romBrowserController->GetSdFolder();
     int filteredCount;

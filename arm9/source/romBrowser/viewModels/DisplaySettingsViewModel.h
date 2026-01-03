@@ -38,6 +38,20 @@ public:
         }
     }
 
+    constexpr bool GetHideFolders() const
+    {
+        return _romBrowserDisplaySettings.hideFolders;
+    }
+
+    void SetHideFolders(bool hideFolders)
+    {
+        if (_romBrowserDisplaySettings.hideFolders != hideFolders)
+        {
+            _romBrowserDisplaySettings.hideFolders = hideFolders;
+            _romBrowserController->SetRomBrowserDisplaySettings(_romBrowserDisplaySettings);
+        }
+    }
+
     void Close()
     {
         _romBrowserController->HideDisplaySettings();

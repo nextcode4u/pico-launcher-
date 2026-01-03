@@ -5,6 +5,7 @@
 class RomBrowserDisplaySettings
 {
 public:
+    bool hideFolders = false;
     RomBrowserLayout layout = RomBrowserLayout::HorizontalIconGrid;
     RomBrowserSortMode sortMode = RomBrowserSortMode::NameAscending;
 };
