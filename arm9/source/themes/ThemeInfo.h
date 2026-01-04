@@ -13,20 +13,21 @@ class ThemeInfo
     String<char16_t, 64> _author;
     Rgb<8, 8, 8> _primaryColor;
     bool _darkTheme;
+    bool _hasDarkThemeSetting;
 public:
     ThemeInfo(const TCHAR* folderName, ThemeType type, const char* name,
         const char* description, const char* author, const Rgb<8, 8, 8>& primaryColor,
-        bool darkTheme)
+        bool darkTheme, bool hasDarkThemeSetting)
         : _folderName(folderName), _type(type), _name(name)
         , _description(description), _author(author), _primaryColor(primaryColor)
-        , _darkTheme(darkTheme) { }
+        , _darkTheme(darkTheme), _hasDarkThemeSetting(hasDarkThemeSetting) { }
 
     ThemeInfo(const TCHAR* folderName, ThemeType type, const char16_t* name,
         const char16_t* description, const char16_t* author, const Rgb<8, 8, 8>& primaryColor,
-        bool darkTheme)
+        bool darkTheme, bool hasDarkThemeSetting)
         : _folderName(folderName), _type(type), _name(name)
         , _description(description), _author(author), _primaryColor(primaryColor)
-        , _darkTheme(darkTheme) { }
+        , _darkTheme(darkTheme), _hasDarkThemeSetting(hasDarkThemeSetting) { }
 
     constexpr const TCHAR* GetFolderName() const { return _folderName; }
     constexpr ThemeType GetType() const { return _type; }
@@ -35,4 +36,5 @@ public:
     constexpr const char16_t* GetAuthor() const { return _author; }
     constexpr const Rgb<8, 8, 8>& GetPrimaryColor() const { return _primaryColor; }
     constexpr bool GetIsDarkTheme() const { return _darkTheme; }
+    constexpr bool HasDarkThemeSetting() const { return _hasDarkThemeSetting; }
 };

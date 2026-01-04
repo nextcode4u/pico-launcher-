@@ -41,6 +41,7 @@ public:
     const ICoverRepository& GetCoverRepository() const override { return *_coverRepository; }
 
     void SetRomBrowserDisplaySettings(const RomBrowserDisplaySettings& romBrowserDisplaySettings) override;
+    void SetThemeDarkMode(bool darkMode) override;
 
     const RomBrowserDisplaySettings& GetRomBrowserDisplaySettings() const override
     {

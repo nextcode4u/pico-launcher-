@@ -14,7 +14,7 @@ class DisplaySettingsBottomSheetView : public BottomSheetView
 public:
     DisplaySettingsBottomSheetView(DisplaySettingsViewModel* viewModel,
         const MaterialColorScheme* materialColorScheme, const IFontRepository* fontRepository,
-        bool showHiddenItemsToggle);
+        bool showAppearanceToggle, bool showHiddenItemsToggle);
 
     void InitVram(const VramContext& vramContext) override;
     void Update() override;
@@ -45,6 +45,7 @@ private:
     std::array<IconButton2DView, 1> _filterOptions;
 
     const MaterialColorScheme* _materialColorScheme;
+    bool _showAppearanceToggle;
     bool _showHiddenItemsToggle;
 
     IconButton2DView CreateLayoutOptionIconButton();

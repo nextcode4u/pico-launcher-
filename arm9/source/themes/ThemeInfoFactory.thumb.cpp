@@ -57,6 +57,7 @@ static std::unique_ptr<ThemeInfo> fromJson(const TCHAR* folderName, const JsonDo
     {
         themeType = ThemeType::Custom;
     }
+    bool hasDarkThemeSetting = json.containsKey(KEY_DARK_THEME);
     return std::make_unique<ThemeInfo>(
         folderName,
         themeType,
@@ -64,7 +65,8 @@ static std::unique_ptr<ThemeInfo> fromJson(const TCHAR* folderName, const JsonDo
         json[KEY_DESCRIPTION] | "",
         json[KEY_AUTHOR] | "",
         parseColor(json[KEY_PRIMARY_COLOR], Rgb<8, 8, 8>(0xFF, 0xFF, 0xFF)),
-        json[KEY_DARK_THEME] | false
+        json[KEY_DARK_THEME] | false,
+        hasDarkThemeSetting
     );
 }
 

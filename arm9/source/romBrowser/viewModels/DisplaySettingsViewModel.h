@@ -48,7 +48,7 @@ public:
         if (_romBrowserDisplaySettings.darkTheme != darkTheme)
         {
             _romBrowserDisplaySettings.darkTheme = darkTheme;
-            _romBrowserController->SetRomBrowserDisplaySettings(_romBrowserDisplaySettings);
+            _romBrowserController->SetThemeDarkMode(darkTheme);
         }
     }
 

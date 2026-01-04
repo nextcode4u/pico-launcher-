@@ -65,6 +65,18 @@ void RomBrowserController::SetRomBrowserDisplaySettings(
     _stateMachine.Fire(RomBrowserStateTrigger::ChangeDisplayMode);
 }
 
+void RomBrowserController::SetThemeDarkMode(bool darkMode)
+{
+    auto& appSettings = _appSettingsService->GetAppSettings();
+    if (appSettings.romBrowserDisplaySettings.darkTheme == darkMode)
+        return;
+
+    appSettings.SetThemeDarkMode(appSettings.theme.GetString(), darkMode);
+    appSettings.romBrowserDisplaySettings.darkTheme = darkMode;
+    _saveSettingsPending = true;
+    _stateMachine.Fire(RomBrowserStateTrigger::ChangeDisplayMode);
+}
+
 void RomBrowserController::Update()
 {
     _stateMachine.Update();

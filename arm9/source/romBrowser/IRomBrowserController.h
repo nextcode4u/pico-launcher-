@@ -38,6 +38,8 @@ public:
 
     virtual void SetRomBrowserDisplaySettings(
         const RomBrowserDisplaySettings& romBrowserDisplaySettings) = 0;
+
+    virtual void SetThemeDarkMode(bool darkMode) = 0;
 };
 
 inline IRomBrowserController::~IRomBrowserController() { }

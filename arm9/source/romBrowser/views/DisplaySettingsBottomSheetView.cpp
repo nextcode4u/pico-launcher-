@@ -53,7 +53,7 @@ static RomBrowserSortMode sRomBrowserSortModes[4] =
 
 DisplaySettingsBottomSheetView::DisplaySettingsBottomSheetView(
     DisplaySettingsViewModel* viewModel, const MaterialColorScheme* materialColorScheme,
-    const IFontRepository* fontRepository, bool showHiddenItemsToggle)
+    const IFontRepository* fontRepository, bool showAppearanceToggle, bool showHiddenItemsToggle)
     : _viewModel(viewModel)
     , _titleLabel(128, 16, 25, fontRepository->GetFont(FontType::Medium11))
     , _layoutLabel(64, 16, 25, fontRepository->GetFont(FontType::Regular10))
@@ -61,6 +61,7 @@ DisplaySettingsBottomSheetView::DisplaySettingsBottomSheetView(
     , _appearanceLabel(64, 16, 25, fontRepository->GetFont(FontType::Regular10))
     , _filtersLabel(64, 16, 25, fontRepository->GetFont(FontType::Regular10))
     , _materialColorScheme(materialColorScheme)
+    , _showAppearanceToggle(showAppearanceToggle)
     , _showHiddenItemsToggle(showHiddenItemsToggle)
 {
     _titleLabel.SetText(u"Display Settings");
@@ -69,8 +70,11 @@ DisplaySettingsBottomSheetView::DisplaySettingsBottomSheetView(
     AddChildTail(&_layoutLabel);
     _sortingLabel.SetText(u"Sorting");
     AddChildTail(&_sortingLabel);
-    _appearanceLabel.SetText(u"Appearance");
-    AddChildTail(&_appearanceLabel);
+    if (_showAppearanceToggle)
+    {
+        _appearanceLabel.SetText(u"Appearance");
+        AddChildTail(&_appearanceLabel);
+    }
     if (_showHiddenItemsToggle)
     {
         _filtersLabel.SetText(u"Hidden Items");
@@ -89,10 +93,13 @@ DisplaySettingsBottomSheetView::DisplaySettingsBottomSheetView(
         AddChildTail(&sortOption);
     }
 
-    for (auto& appearanceOption : _appearanceOptions)
+    if (_showAppearanceToggle)
     {
-        appearanceOption = CreateAppearanceOptionIconButton();
-        AddChildTail(&appearanceOption);
+        for (auto& appearanceOption : _appearanceOptions)
+        {
+            appearanceOption = CreateAppearanceOptionIconButton();
+            AddChildTail(&appearanceOption);
+        }
     }
 
     if (_showHiddenItemsToggle)
@@ -207,7 +214,8 @@ void DisplaySettingsBottomSheetView::UpdateLabels()
     _titleLabel.SetPosition(TITLE_LABEL_X, _position.y + TITLE_LABEL_Y);
     _layoutLabel.SetPosition(LAYOUT_LABEL_X, _position.y + LAYOUT_LABEL_Y);
     _sortingLabel.SetPosition(SORTING_LABEL_X, _position.y + SORTING_LABEL_Y);
-    _appearanceLabel.SetPosition(APPEARANCE_LABEL_X, _position.y + APPEARANCE_LABEL_Y);
+    if (_showAppearanceToggle)
+        _appearanceLabel.SetPosition(APPEARANCE_LABEL_X, _position.y + APPEARANCE_LABEL_Y);
     if (_showHiddenItemsToggle)
         _filtersLabel.SetPosition(FILTERS_LABEL_X, _position.y + FILTERS_LABEL_Y);
 }
@@ -240,17 +248,20 @@ void DisplaySettingsBottomSheetView::Update()
         x += ICON_SPACING;
         idx++;
     }
-    x = ICON_START_X;
-    auto isDarkTheme = _viewModel->GetDarkTheme();
-    idx = 0;
-    for (auto& appearanceOption : _appearanceOptions)
+    if (_showAppearanceToggle)
     {
-        appearanceOption.SetPosition(x, _position.y + (APPEARANCE_LABEL_Y - 8));
-        appearanceOption.SetState(isDarkTheme
-            ? IconButtonView::State::ToggleSelected
-            : IconButtonView::State::ToggleUnselected);
-        x += ICON_SPACING;
-        idx++;
+        x = ICON_START_X;
+        auto isDarkTheme = _viewModel->GetDarkTheme();
+        idx = 0;
+        for (auto& appearanceOption : _appearanceOptions)
+        {
+            appearanceOption.SetPosition(x, _position.y + (APPEARANCE_LABEL_Y - 8));
+            appearanceOption.SetState(isDarkTheme
+                ? IconButtonView::State::ToggleSelected
+                : IconButtonView::State::ToggleUnselected);
+            x += ICON_SPACING;
+            idx++;
+        }
     }
     if (_showHiddenItemsToggle)
     {
@@ -279,8 +290,11 @@ void DisplaySettingsBottomSheetView::Draw(GraphicsContext& graphicsContext)
         _layoutLabel.SetForegroundColor(_materialColorScheme->onSurfaceVariant);
         _sortingLabel.SetBackgroundColor(_materialColorScheme->GetColor(md::sys::color::surfaceContainerLow));
         _sortingLabel.SetForegroundColor(_materialColorScheme->onSurfaceVariant);
-        _appearanceLabel.SetBackgroundColor(_materialColorScheme->GetColor(md::sys::color::surfaceContainerLow));
-        _appearanceLabel.SetForegroundColor(_materialColorScheme->onSurfaceVariant);
+        if (_showAppearanceToggle)
+        {
+            _appearanceLabel.SetBackgroundColor(_materialColorScheme->GetColor(md::sys::color::surfaceContainerLow));
+            _appearanceLabel.SetForegroundColor(_materialColorScheme->onSurfaceVariant);
+        }
         if (_showHiddenItemsToggle)
         {
             _filtersLabel.SetBackgroundColor(_materialColorScheme->GetColor(md::sys::color::surfaceContainerLow));
@@ -363,48 +377,57 @@ View* DisplaySettingsBottomSheetView::MoveFocus(View* currentFocus,
             }
             else if (direction == FocusMoveDirection::Down)
             {
-                if (idx >= (int)_appearanceOptions.size())
-                    idx = _appearanceOptions.size() - 1;
-                return &_appearanceOptions[idx];
-            }
-        }
-        idx++;
-    }
-    idx = 0;
-    for (auto& appearanceOption : _appearanceOptions)
-    {
-        if (currentFocus == &appearanceOption)
-        {
-            if (direction == FocusMoveDirection::Left)
-            {
-                if (--idx < 0)
-                    idx += _appearanceOptions.size();
-                return &_appearanceOptions[idx];
-            }
-            else if (direction == FocusMoveDirection::Right)
-            {
-                if (++idx >= (int)_appearanceOptions.size())
-                    idx = 0;
-                return &_appearanceOptions[idx];
-            }
-            else if (direction == FocusMoveDirection::Up)
-            {
-                if (idx >= (int)_sortOptions.size())
-                    idx = _sortOptions.size() - 1;
-                return &_sortOptions[idx];
-            }
-            else if (direction == FocusMoveDirection::Down)
-            {
-                if (_showHiddenItemsToggle)
+                if (_showAppearanceToggle)
                 {
-                    if (idx >= (int)_filterOptions.size())
-                        idx = _filterOptions.size() - 1;
-                    return &_filterOptions[idx];
+                    if (idx >= (int)_appearanceOptions.size())
+                        idx = _appearanceOptions.size() - 1;
+                    return &_appearanceOptions[idx];
                 }
+                if (_showHiddenItemsToggle)
+                    return &_filterOptions[0];
                 return &_layoutOptions[0];
             }
         }
         idx++;
+    }
+    if (_showAppearanceToggle)
+    {
+        idx = 0;
+        for (auto& appearanceOption : _appearanceOptions)
+        {
+            if (currentFocus == &appearanceOption)
+            {
+                if (direction == FocusMoveDirection::Left)
+                {
+                    if (--idx < 0)
+                        idx += _appearanceOptions.size();
+                    return &_appearanceOptions[idx];
+                }
+                else if (direction == FocusMoveDirection::Right)
+                {
+                    if (++idx >= (int)_appearanceOptions.size())
+                        idx = 0;
+                    return &_appearanceOptions[idx];
+                }
+                else if (direction == FocusMoveDirection::Up)
+                {
+                    if (idx >= (int)_sortOptions.size())
+                        idx = _sortOptions.size() - 1;
+                    return &_sortOptions[idx];
+                }
+                else if (direction == FocusMoveDirection::Down)
+                {
+                    if (_showHiddenItemsToggle)
+                    {
+                        if (idx >= (int)_filterOptions.size())
+                            idx = _filterOptions.size() - 1;
+                        return &_filterOptions[idx];
+                    }
+                    return &_layoutOptions[0];
+                }
+            }
+            idx++;
+        }
     }
     if (_showHiddenItemsToggle)
     {

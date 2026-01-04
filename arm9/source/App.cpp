@@ -94,7 +94,18 @@ void App::LoadTheme()
         LOG_DEBUG("Failed to load theme '%s'. Using fallback theme.\n", _appSettingsService.GetAppSettings().theme.GetString());
         themeInfo = themeInfoFactory.CreateFallbackTheme();
     }
-    bool useDarkTheme = _appSettingsService.GetAppSettings().romBrowserDisplaySettings.darkTheme;
+    bool useDarkTheme = themeInfo->GetIsDarkTheme();
+    _themeSupportsDarkToggle = themeInfo->HasDarkThemeSetting();
+    if (_themeSupportsDarkToggle)
+    {
+        bool overrideDarkTheme = false;
+        if (_appSettingsService.GetAppSettings().TryGetThemeDarkMode(
+                _appSettingsService.GetAppSettings().theme.GetString(), overrideDarkTheme))
+        {
+            useDarkTheme = overrideDarkTheme;
+        }
+    }
+    _appSettingsService.GetAppSettings().romBrowserDisplaySettings.darkTheme = useDarkTheme;
     _theme = ThemeFactory().CreateFromThemeInfo(themeInfo.get(), useDarkTheme);
     _isDarkTheme = useDarkTheme;
     themeInfo.reset();
@@ -315,7 +326,7 @@ void App::HandleShowDisplaySettingsTrigger()
     bool showHiddenItemsToggle = _appSettingsService.GetAppSettings().showHiddenItemsToggle;
     auto displaySettingsDialog = std::make_unique<DisplaySettingsBottomSheetView>(
         &_displaySettingsBottomSheetViewModel, &_theme->GetMaterialColorScheme(), _theme->GetFontRepository(),
-        showHiddenItemsToggle);
+        _themeSupportsDarkToggle, showHiddenItemsToggle);
     displaySettingsDialog->SetGraphics(_iconButtonViewVram);
     _dialogPresenter.ShowDialog(std::move(displaySettingsDialog));
 }

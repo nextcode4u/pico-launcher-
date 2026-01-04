@@ -14,6 +14,7 @@
 #define KEY_ROM_BROWSER_SORT_MODE    "romBrowserSortMode"
 #define KEY_ROM_BROWSER_HIDE_FOLDERS "romBrowserHideFolders"
 #define KEY_ROM_BROWSER_DARK_THEME   "romBrowserDarkTheme"
+#define KEY_THEME_DARK_MODES         "themeDarkModes"
 #define KEY_SHOW_HIDDEN_ITEMS_TOGGLE "showHiddenItemsToggle"
 #define KEY_THEME                    "theme"
 #define KEY_LAST_USED_FILE_PATH      "lastUsedFilePath"
@@ -125,6 +126,25 @@ static bool tryParseFileAssociations(const JsonObjectConst& json, AppSettings* a
     return true;
 }
 
+static bool tryParseThemeDarkModes(const JsonObjectConst& json, AppSettings* appSettings)
+{
+    if (json.isNull())
+    {
+        return false;
+    }
+
+    appSettings->themeDarkModes = std::make_unique_for_overwrite<ThemeDarkModeSetting[]>(json.size());
+    int i = 0;
+    for (auto item : json)
+    {
+        appSettings->themeDarkModes[i].themeName = item.key().c_str();
+        appSettings->themeDarkModes[i].darkMode = item.value().as<bool>();
+        i++;
+    }
+    appSettings->numberOfThemeDarkModes = i;
+    return true;
+}
+
 static void serializeFileAssociations(DynamicJsonDocument& json, const AppSettings* appSettings)
 {
     auto jsonObject = json[KEY_FILE_ASSOCIATIONS].to<JsonObject>();
@@ -143,6 +163,21 @@ static void serializeFileAssociations(DynamicJsonDocument& json, const AppSettin
     }
 }
 
+static void serializeThemeDarkModes(DynamicJsonDocument& json, const AppSettings* appSettings)
+{
+    if (appSettings->numberOfThemeDarkModes == 0)
+        return;
+
+    auto jsonObject = json[KEY_THEME_DARK_MODES].to<JsonObject>();
+    for (u32 i = 0; i < appSettings->numberOfThemeDarkModes; i++)
+    {
+        const auto& entry = appSettings->themeDarkModes[i];
+        if (strlen(entry.themeName.GetString()) == 0)
+            continue;
+        jsonObject[entry.themeName.GetString()] = entry.darkMode;
+    }
+}
+
 static std::unique_ptr<u8[]> writeJson(const AppSettings* appSettings, u32& length)
 {
     DynamicJsonDocument json(JSON_RESERVED_SIZE);
@@ -150,11 +185,11 @@ static std::unique_ptr<u8[]> writeJson(const AppSettings* appSettings, u32& leng
     json[KEY_ROM_BROWSER_LAYOUT] = serializeRomBrowserLayout(appSettings->romBrowserDisplaySettings.layout);
     json[KEY_ROM_BROWSER_SORT_MODE] = serializeRomBrowserSortMode(appSettings->romBrowserDisplaySettings.sortMode);
     json[KEY_ROM_BROWSER_HIDE_FOLDERS] = appSettings->romBrowserDisplaySettings.hideFolders;
-    json[KEY_ROM_BROWSER_DARK_THEME] = appSettings->romBrowserDisplaySettings.darkTheme;
     json[KEY_SHOW_HIDDEN_ITEMS_TOGGLE] = appSettings->showHiddenItemsToggle;
     json[KEY_THEME] = appSettings->theme.GetString();
     json[KEY_LAST_USED_FILE_PATH] = appSettings->lastUsedFilePath.GetString();
     serializeFileAssociations(json, appSettings);
+    serializeThemeDarkModes(json, appSettings);
 
     u32 outputSize = measureJsonPretty(json);
     std::unique_ptr<u8[]> fileData(new(cache_align) u8[outputSize]);
@@ -213,6 +248,7 @@ static void readJson(AppSettings* appSettings, const JsonDocument& json)
         | appSettings->showHiddenItemsToggle;
 
     tryParseFileAssociations(json[KEY_FILE_ASSOCIATIONS], appSettings);
+    tryParseThemeDarkModes(json[KEY_THEME_DARK_MODES].as<JsonObjectConst>(), appSettings);
 }
 
 bool JsonAppSettingsSerializer::Deserialize(AppSettings* appSettings, const char* filePath) const
