@@ -2,7 +2,10 @@
 #include "FileType.h"
 #include "services/settings/FileAssociation.h"
 #include "../Theme/IThemeFileIconFactory.h"
+#include "Nds/NdsFileIcon.h"
+#include "Nds/ndsBanner.h"
 #include "fat/File.h"
+#include <nds/arm9/cache.h>
 #include <string.h>
 
 static inline bool writeTextFile(const char* path, const char* text)
@@ -42,6 +45,11 @@ public:
     std::unique_ptr<FileIcon> CreateFileIcon(const TCHAR* fileName,
         const IThemeFileIconFactory* themeFileIconFactory) const override
     {
+        if (TryLoadAssociationBanner())
+        {
+            return std::make_unique<NdsFileIcon>(&_associationBanner);
+        }
+
         return _baseFileType != nullptr
             ? _baseFileType->CreateFileIcon(fileName, themeFileIconFactory)
             : themeFileIconFactory->CreateGenericFileIcon(fileName);
@@ -92,6 +100,53 @@ public:
     }
 
 private:
+    bool TryLoadAssociationBanner() const
+    {
+        if (_associationBannerChecked)
+            return _associationBannerValid;
+
+        _associationBannerChecked = true;
+        _associationBannerValid = false;
+
+        if (!_fileAssociation || !_fileAssociation->applicationPath.GetString()[0])
+            return false;
+
+        File file;
+        if (file.Open(_fileAssociation->applicationPath.GetString(), FA_READ | FA_OPEN_EXISTING) != FR_OK)
+            return false;
+
+        if (file.Seek(0x68) != FR_OK)
+            return false;
+
+        u32 bytesRead = 0;
+        u32 bannerOffset = 0;
+        if (file.Read(&bannerOffset, 4, bytesRead) != FR_OK || bytesRead != 4)
+            return false;
+
+        if (bannerOffset == 0)
+            return false;
+
+        if (file.Seek(bannerOffset) != FR_OK)
+            return false;
+
+        if (file.Read(&_associationBanner, 0xA00, bytesRead) != FR_OK || bytesRead != 0xA00)
+            return false;
+
+        if (_associationBanner.header.version >= NDS_BANNER_VERSION_103)
+        {
+            if (file.Read(((u8*)&_associationBanner) + 0xA00, 0x19C0, bytesRead) != FR_OK
+                || bytesRead != 0x19C0)
+                return false;
+        }
+
+        _associationBannerValid = true;
+        DC_FlushRange(&_associationBanner, sizeof(_associationBanner));
+        return true;
+    }
+
     const FileAssociation* _fileAssociation;
     const FileType* _baseFileType = nullptr;
+    mutable bool _associationBannerChecked = false;
+    mutable bool _associationBannerValid = false;
+    mutable nds_banner_t _associationBanner alignas(32) {};
 };
