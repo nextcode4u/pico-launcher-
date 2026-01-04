@@ -322,9 +322,9 @@ void App::HandleShowDisplaySettingsTrigger()
 
 void App::HandleHideDisplaySettingsTrigger()
 {
-    _dialogPresenter.CloseDialog();
-    if (!_dialogPresenter.GetOldFocus())
-        _romBrowserBottomScreenView->Focus(_focusManager);
+    _dialogPresenter.ForceClose();
+    _dialogPresenter.ClearOldFocus();
+    _romBrowserBottomScreenView->Focus(_focusManager);
 }
 
 void App::HandleNavigateTrigger()
