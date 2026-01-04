@@ -14,7 +14,7 @@ on:
 jobs:
   pico_launcher:
     runs-on: ubuntu-latest
-    container: skylyrac/blocksds:slim-v1.13.1
+    container: skylyrac/blocksds:slim-v1.16.0
     name: Build Pico Launcher
     steps:
       - name: Checkout repo

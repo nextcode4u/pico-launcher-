@@ -60,6 +60,16 @@ extern "C" void* memalign(size_t alignment, size_t size)
     return result;
 }
 
+extern "C" void* calloc(size_t num, size_t size)
+{
+    void* result = malloc(num * size);
+    if (result)
+    {
+        memset(result, 0, num * size);
+    }
+    return result;
+}
+
 void* operator new(std::size_t blocksize)
 {
     return malloc(blocksize);
