@@ -47,6 +47,9 @@ public:
         _oldFocus = nullptr;
     }
 
+    /// @brief Forces any open dialog to close immediately.
+    void ForceClose();
+
     /// @brief Gets the focus that was stored when a dialog was opened.
     /// @return The view that was focused when the current dialog was opened.
     constexpr View* GetOldFocus() const

@@ -357,8 +357,8 @@ void App::HandleChangeDisplayModeTrigger(RomBrowserState newState)
     bool desiredDarkTheme = _appSettingsService.GetAppSettings().romBrowserDisplaySettings.darkTheme;
     if (desiredDarkTheme != _isDarkTheme)
     {
-        _dialogPresenter.CloseDialog();
-        _dialogPresenter.ClearOldFocus();
+        _focusManager.Unfocus();
+        _dialogPresenter.ForceClose();
         LoadTheme();
         _iconButtonViewVram = IconButton2DView::UploadGraphics(_mainObjVram);
 
@@ -393,6 +393,8 @@ void App::HandleChangeDisplayModeTrigger(RomBrowserState newState)
     _romBrowserBottomScreenView->RomBrowserViewModelInvalidated(_mainVramContext);
     if (newState == RomBrowserState::Browser)
         _romBrowserBottomScreenView->Focus(_focusManager);
+    else if (newState == RomBrowserState::DisplaySettings)
+        HandleShowDisplaySettingsTrigger();
 
     _changeDisplayMode = false;
 }

@@ -30,6 +30,17 @@ void DialogPresenter::CloseDialog()
     _newState = State::BottomSheetClosing;
 }
 
+void DialogPresenter::ForceClose()
+{
+    _currentDialog.reset();
+    _nextDialog.reset();
+    _oldFocus = nullptr;
+    _curState = State::Idle;
+    _newState = State::Idle;
+    _scrimAnimator = Animator<int>(0);
+    _yAnimator = Animator<int>(192);
+}
+
 void DialogPresenter::Update()
 {
     if (_curState != _newState)
