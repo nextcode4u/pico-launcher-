@@ -1,4 +1,5 @@
 #pragma once
+#include <string.h>
 #include "gui/views/ViewContainer.h"
 #include "../FileType/FileIcon.h"
 
@@ -26,6 +27,10 @@ public:
     void SetIcon(std::unique_ptr<FileIcon> icon)
     {
         _icon = std::move(icon);
+        if (!_icon && _iconVram)
+        {
+            memset((void*)_iconVram, 0, FILE_ICON_VRAM_SIZE);
+        }
     }
 
     void UploadIconGraphics() const
