@@ -167,6 +167,11 @@ int main(int argc, char* argv[])
 
     rtc_init();
 
+    if (argc >= 1)
+    {
+        pload_setLauncherPath(argv[0]);
+    }
+
     memset(&gFatFs, 0, sizeof(gFatFs));
     if (dldi_init())
     {

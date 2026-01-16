@@ -1,7 +1,7 @@
 #pragma once
 
 /// @brief The Pico Loader API version supported by this header file.
-#define PICO_LOADER_API_VERSION     1
+#define PICO_LOADER_API_VERSION     2
 
 /// @brief Enum to specify the drive to boot from.
 typedef enum
@@ -35,6 +35,14 @@ typedef struct
     char arguments[256];
 } pload_params_t;
 
+/// @brief Struct representing the API version 2 part of the header of picoLoader7.bin.
+typedef struct
+{
+    /// @brief The path of the rom to return to when exiting an application.
+    ///        When this path is not set, no bootstub will be patched into homebrew applications.
+    char launcherPath[256];
+} pload_header7_v2_t;
+
 /// @brief Struct representing the header of picoLoader7.bin.
 typedef struct
 {
@@ -52,4 +60,7 @@ typedef struct
 
     /// @brief The load params, see \see pload_params_t.
     pload_params_t loadParams;
+
+    /// @brief The API version 2 part of the header. Only access this when \see apiVersion >= 2.
+    pload_header7_v2_t v2;
 } pload_header7_t;

@@ -10,6 +10,7 @@
 #include <libtwl/ipc/ipcFifoSystem.h>
 #include "ipcChannels.h"
 #include "fat/File.h"
+#include "core/StringUtil.h"
 #include "picoLoaderBootstrap.h"
 
 #define PICO_LOADER_9_PATH    "/_pico/picoLoader9.bin"
@@ -18,6 +19,7 @@
 typedef void (*pico_loader_9_func_t)(void);
 
 static pload_params_t sLoadParams;
+static char sLauncherPath[256] alignas(32);
 static PicoLoaderBootDrive sBootDrive;
 
 pload_params_t* pload_getLoadParams()
@@ -28,6 +30,11 @@ pload_params_t* pload_getLoadParams()
 void pload_setBootDrive(PicoLoaderBootDrive bootDrive)
 {
     sBootDrive = bootDrive;
+}
+
+void pload_setLauncherPath(const char* launcherPath)
+{
+    StringUtil::Copy(sLauncherPath, launcherPath, sizeof(sLauncherPath));
 }
 
 void pload_start()
@@ -78,8 +85,13 @@ void pload_start()
     DC_InvalidateAll();
     IC_InvalidateAll();
 
-    ((pload_header7_t*)0x06840000)->bootDrive = sBootDrive;
-    dma_ntrCopy16(3, &sLoadParams, &((pload_header7_t*)0x06840000)->loadParams, sizeof(pload_params_t));
+    auto header = (pload_header7_t*)0x06840000;
+    header->bootDrive = sBootDrive;
+    dma_ntrCopy16(3, &sLoadParams, &header->loadParams, sizeof(pload_params_t));
+    if (header->apiVersion >= 2)
+    {
+        dma_ntrCopy16(3, &sLauncherPath, &header->v2.launcherPath, sizeof(header->v2.launcherPath));
+    }
     mem_setVramCMapping(MEM_VRAM_C_ARM7_00000);
     mem_setVramDMapping(MEM_VRAM_D_ARM7_20000);
     ipc_sendFifoMessage(IPC_CHANNEL_LOADER, 1);
